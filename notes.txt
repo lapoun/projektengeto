@@ -1,0 +1,96 @@
+Postup prace stazeni souboru
+
+1. wget https://raw.githubusercontent.com/ENGETO-Academy/Linux-public/main/files/pwlist.csv
+
+2. upravíme si soubor tak aby odstranil všechny výskyty znaku carriage return \r a vytvoříme si tímto nový file s novým nazvem
+ tr -d '\r' < pwlist.csv > pwlistnovy.csv
+
+3. pomocí cat jsem si ověřil zda to skutečně něco vytvořilo
+ cat pwlistnovy.csv
+
+4. zjistime unikatni pocet jednotlivych generatoru total_count
+ awk -F, '{print $1}' pwlistnovy.csv | sort | uniq -c | tee test.txt a pak ověříme pomocný soubor cat test.txt
+
+5. vypíšeme si do pomocného souboru validní generatory s minimálním počtem generatoru větší jako 50
+ awk '$1 >= 50 {print $2}' test.txt | tee oktest.txt
+
+6. musíme diskvalifikovat generator Andoes protoze vygeneroval malo vzorku timto prikazem ho diskvalifikujeme a vytvorime novy pomocny soubor 50test.csv
+ grep -f oktest.txt pwlistnovy.csv | tee 50test.csv
+
+7. Minimální délka musí být 8 znaků (min_length) vytvoření pomocného souboru který bude obsahovat sadu řetezců větší nebo rovno 8
+ awk -F, 'length($2) >= 8' 50test.csv | tee min.csv
+ awk -F, '{print $1}' min.csv | sort | uniq -c 
+
+     66 Cairo
+     79 HernsPW
+     85 Orion1.15
+     46 PWmk
+
+8. Musí obsahovat alespoň 1 malé písmeno (min_lower) vytvoření pomocného souboru který bude obsahovat sadu řetězců obsahující alespoň jedno malé písmeno
+ grep -E '[a-z]' 50test.csv | tee minlowertest.csv
+
+grep -c  Cairo minlowertest.csv 
+99 vzorků
+grep -c  HernsPW minlowertest.csv
+91 vzorků
+grep -c  Orion1.15 minlowertest.csv
+85 vzorků
+grep -c  PWmk minlowertest.csv
+74 vzorků
+
+9. Musí obsahovat alespoň 1 velké písmeno (min_upper) vytvoření pomocného souboru který bude obsahovat sadu řetězců obsahujicí alespoň jedno velké písmeno
+
+grep -E '[A-Z]' 50test.csv | tee uppertest.csv
+
+grep -c  Cairo uppertest.csv
+38 vzorků
+grep -c  HernsPW uppertest.csv
+38 vzorků
+grep -c  Orion1.15 uppertest.csv
+37 vzorků
+grep -c  PWmk uppertest.csv
+37 vzorků
+
+10. Musí obsahovat alespoň 1 číslici (min_digit) vytvoření pomocného souboru který bude obsahovat sadu řetězců obsahujicí alespoň jednu číslici
+ grep -E ',.*[0-9]' 50test.csv | tee cislotest.csv
+
+grep -c  Cairo cislotest.csv
+73 vzorků
+grep -c  HernsPW cislotest.csv
+85 vzorků
+grep -c  Orion1.15 cislotest.csv
+73 vzorků
+grep -c  PWmk cislotest.csv
+0 vzorků
+
+11. Musí obsahovat alespoň 1 speciální znak (min_special) vytvoření pomocného souboru který bude obsahovat sadu řetězců obsahujicí specialni znak
+grep -E ',.*[^a-zA-Z0-9]' 50test.csv | tee special.csv
+
+grep -c  Cairo special.csv
+62 vzorků
+grep -c  HernsPW special.csv
+71 vzorků
+grep -c  Orion1.15 special.csv
+0 vzorků
+grep -c  PWmk special.csv
+55 vzorků
+
+12. Žádné dva vzorky daného generátoru nesmí obsahovat stejnou počáteční trojici znaků (valid_prefix)
+
+awk -F, '{print substr ($2, 1, 3)}' 50test.csv | sort | uniq -c | awk '$1 > 1 {print $2}'
+
+grep -c AAn 50test.csv
+
+2x AAn duplicitní u  generatoru Orion1.15
+
+Ostatní validní
+
+13. Žádné dva vzorky daného generátoru nesmí obsahovat stejnou ukončovací trojici znaků (valid_suffix)
+
+grep -o '.\{3\}$' 50test.csv  | sort | uniq -c
+
+všechny jsou unikátní - žádný se neopakuje
+
+
+
+

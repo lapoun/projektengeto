@@ -1,0 +1,32 @@
+wget https://raw.githubusercontent.com/ENGETO-Academy/Linux-public/main/files/pwlist.csv
+tr -d '\r' < pwlist.csv > pwlistnovy.csv
+cat pwlistnovy.csv
+awk -F, '{print $1}' pwlistnovy.csv | sort | uniq -c | tee test.txt
+cat test.txt
+awk '$1 >= 50 {print $2}' test.txt | tee oktest.txt
+grep -f oktest.txt pwlistnovy.csv | tee 50test.csv
+awk -F, 'length($2) >= 8' 50test.csv | tee min.csv
+awk -F, '{print $1}' min.csv | sort | uniq -c 
+grep -E '[a-z]' 50test.csv | tee minlowertest.csv
+grep -c  Cairo minlowertest.csv 
+grep -c  Cairo minlowertest.csv 
+grep -c  Orion1.15 minlowertest.csv
+grep -c  PWmk minlowertest.csv
+grep -E '[A-Z]' 50test.csv | tee uppertest.csv
+grep -c  Cairo uppertest.csv
+grep -c  HernsPW uppertest.csv
+grep -c  Orion1.15 uppertest.csv
+grep -c  PWmk uppertest.csv
+grep -E ',.*[0-9]' 50test.csv | tee cislotest.csv
+grep -c  Cairo cislotest.csv
+grep -c  HernsPW cislotest.csv
+grep -c  Orion1.15 cislotest.csv
+grep -c  PWmk cislotest.csv
+grep -E ',.*[^a-zA-Z0-9]' 50test.csv | tee special.csv
+grep -c  Cairo special.csv
+grep -c  HernsPW special.csv
+grep -c  Orion1.15 special.csv
+grep -c  PWmk special.csv
+awk -F, '{print substr ($2, 1, 3)}' 50test.csv | sort | uniq -c | awk '$1 > 1 {print $2}'
+grep -c AAn 50test.csv
+grep -o '.\{3\}$' 50test.csv  | sort | uniq -c
